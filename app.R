@@ -4,7 +4,7 @@ library(dplyr)
 library(stringr)
 library(readr)
 library(sp)
-library(tigris)
+# library(tigris)
 
 zips <- readRDS('zips.rds')
 
@@ -23,6 +23,21 @@ get_zips <- function(metro_name) {
   # Return those ZCTAs
   return(my_zips)
   
+}
+
+# Write function to format the legend appropriately 
+
+quantile_labels <- function(vec, n) {
+  qs <- round(quantile(vec, seq(0, 1, 1/n), na.rm = TRUE), 0)
+  len <- length(qs) - 1
+  qlabs <- c()
+  for (i in 1:len) {
+    j <- i + 1
+    v <- paste0("$", as.character(qs[i]), " - ", "$", as.character(qs[j]))
+    qlabs <- c(qlabs, v)
+  }
+  final_labs <- c(qlabs, "Data unavailable")
+  final_labs
 }
 
 # Define UI for application that draws a histogram
@@ -68,8 +83,11 @@ server <- function(input, output) {
                    smoothFactor = 0.2, 
                    label = label, 
                    color = 'grey') %>%
-       addLegend(pal = pal, 
-                 values = round(1000 * zip_data()$incpr, 2), 
+       addLegend(colors = c("#F7FCF5", "#DBF1D5", "#AEDEA7", "#74C476", "#37A055", "#0E7734", 
+                            "#00441B", "#DBDBDB"), 
+                 bins = 7, 
+                 opacity = 0.7, 
+                 labels = quantile_labels(1000 * zip_data()$incpr, 7), 
                  position = "bottomright")
      
    })
